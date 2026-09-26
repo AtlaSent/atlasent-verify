@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/AtlaSent-Systems-Inc/atlasent-verify/internal/jcs"
+	"github.com/Atlasent/atlasent-verify/internal/jcs"
 )
 
 // ─── harness ─────────────────────────────────────────────────────────────────

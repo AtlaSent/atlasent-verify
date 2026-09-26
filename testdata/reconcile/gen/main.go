@@ -67,7 +67,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/AtlaSent-Systems-Inc/atlasent-verify/internal/jcs"
+	"github.com/Atlasent/atlasent-verify/internal/jcs"
 )
 
 // Fixed 32-byte seeds -> deterministic Ed25519 keys. In-source ON PURPOSE,

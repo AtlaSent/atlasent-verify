@@ -43,7 +43,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/AtlaSent-Systems-Inc/atlasent-verify/internal/canonical"
+	"github.com/Atlasent/atlasent-verify/internal/canonical"
 )
 
 // Fixed 32-byte seed → deterministic Ed25519 key. In-source ON PURPOSE:

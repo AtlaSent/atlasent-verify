@@ -20,10 +20,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/AtlaSent-Systems-Inc/atlasent-verify/internal/chain"
-	"github.com/AtlaSent-Systems-Inc/atlasent-verify/internal/envelope"
-	"github.com/AtlaSent-Systems-Inc/atlasent-verify/internal/keys"
-	"github.com/AtlaSent-Systems-Inc/atlasent-verify/internal/reconcile"
+	"github.com/Atlasent/atlasent-verify/internal/chain"
+	"github.com/Atlasent/atlasent-verify/internal/envelope"
+	"github.com/Atlasent/atlasent-verify/internal/keys"
+	"github.com/Atlasent/atlasent-verify/internal/reconcile"
 )
 
 // Version is stamped at build time via -ldflags

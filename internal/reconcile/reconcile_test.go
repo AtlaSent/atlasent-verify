@@ -3,7 +3,7 @@ package reconcile
 import (
 	"testing"
 
-	"github.com/AtlaSent-Systems-Inc/atlasent-verify/internal/envelope"
+	"github.com/Atlasent/atlasent-verify/internal/envelope"
 )
 
 // These tests build *envelope.Envelope literals directly — Reconcile operates

@@ -22,7 +22,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/AtlaSent-Systems-Inc/atlasent-verify/internal/canonical"
+	"github.com/Atlasent/atlasent-verify/internal/canonical"
 )
 
 var binPath string

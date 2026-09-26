@@ -26,7 +26,7 @@ name: canary
 # What this canary does NOT do:
 #
 #   - It does not replace the human quarterly proof documented in
-#     atlasent-internal/runbooks/external-audit-verify-proof.md. That
+#     AtlaSent's internal external-audit-verify proof runbook. That
 #     runbook is the canonical *proof*; this canary is the
 #     *early-warning* that the procedure has silently broken between
 #     human runs.
@@ -245,7 +245,7 @@ jobs:
 
           Job status: ${{ job.status }}
 
-          See atlasent-internal/runbooks/external-audit-verify-proof.md
+          See AtlaSent's internal external-audit-verify proof runbook
           for the human quarterly proof procedure that this canary
           supplements.
           EOF
