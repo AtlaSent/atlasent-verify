@@ -81,7 +81,7 @@ For release artifacts, verify the downloaded binary before running audit-chain c
 
 ```bash
 cosign verify-blob \
-  --certificate-identity-regexp 'https://github.com/AtlaSent-Systems-Inc/atlasent-verify/.*' \
+  --certificate-identity-regexp 'https://github.com/Atlasent/atlasent-verify/.*' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
   --signature <artifact>.sig \
   --certificate <artifact>.pem \

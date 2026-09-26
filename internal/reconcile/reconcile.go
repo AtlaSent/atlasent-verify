@@ -59,7 +59,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AtlaSent-Systems-Inc/atlasent-verify/internal/envelope"
+	"github.com/Atlasent/atlasent-verify/internal/envelope"
 )
 
 // FailureCode enumerates reconciliation's machine-readable finding codes —

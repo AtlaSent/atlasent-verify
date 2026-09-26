@@ -17,7 +17,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/AtlaSent-Systems-Inc/atlasent-verify/internal/jcs"
+	"github.com/Atlasent/atlasent-verify/internal/jcs"
 )
 
 // certKeys mints a fresh ed25519 keypair + matching in-memory keystore,

@@ -4,7 +4,7 @@
 
 Please report security vulnerabilities in `atlasent-audit-verify` **privately**
 via GitHub Security Advisories — use the **"Report a vulnerability"** button on
-the [Security tab](https://github.com/AtlaSent-Systems-Inc/atlasent-verify/security/advisories/new)
+the [Security tab](https://github.com/Atlasent/atlasent-verify/security/advisories/new)
 of this repository.
 
 Do **not** open a public issue for security reports. We aim to acknowledge new
