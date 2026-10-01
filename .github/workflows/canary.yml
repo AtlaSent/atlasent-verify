@@ -171,7 +171,7 @@ jobs:
           fi
           echo "Verifying $BIN"
           cosign verify-blob \
-            --certificate-identity-regexp 'https://github.com/Atlasent/atlasent-verify/.*' \
+            --certificate-identity-regexp 'https://github.com/(?i:atlasent)/atlasent-verify/.*' \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com \
             --signature "$BIN.sig" \
             --certificate "$BIN.pem" \
@@ -188,7 +188,7 @@ jobs:
             exit 0
           fi
           cosign verify-blob \
-            --certificate-identity-regexp 'https://github.com/Atlasent/atlasent-verify/.*' \
+            --certificate-identity-regexp 'https://github.com/(?i:atlasent)/atlasent-verify/.*' \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com \
             --signature CHECKSUMS.txt.sig \
             --certificate CHECKSUMS.txt.pem \

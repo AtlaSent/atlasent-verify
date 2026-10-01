@@ -13,7 +13,7 @@ name: release
 #   3. Signs each artifact + the checksum file with Sigstore Cosign
 #      (keyless OIDC signing). Anyone can verify via:
 #        cosign verify-blob \
-#          --certificate-identity-regexp 'https://github.com/Atlasent/atlasent-verify/.*' \
+#          --certificate-identity-regexp 'https://github.com/(?i:atlasent)/atlasent-verify/.*' \
 #          --certificate-oidc-issuer https://token.actions.githubusercontent.com \
 #          --signature <artifact>.sig \
 #          --certificate <artifact>.pem \
@@ -321,7 +321,7 @@ jobs:
             sha256sum -c CHECKSUMS.txt
             # 2) Sigstore signature (per artifact, or the CHECKSUMS file once)
             cosign verify-blob \
-              --certificate-identity-regexp 'https://github.com/Atlasent/atlasent-verify/.*' \
+              --certificate-identity-regexp 'https://github.com/(?i:atlasent)/atlasent-verify/.*' \
               --certificate-oidc-issuer https://token.actions.githubusercontent.com \
               --signature <artifact>.sig --certificate <artifact>.pem <artifact>
             # 3) GitHub build provenance
