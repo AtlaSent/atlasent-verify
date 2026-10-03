@@ -379,6 +379,14 @@ func printEnvelopeHuman(res *envelope.VerificationResult) {
 		fmt.Fprintf(os.Stdout, "    └─ %-22s %s\n", "Retention", retentionLine(res))
 	}
 
+	// Approver identity on approval reevaluations (atlasent-api#3875). Printed
+	// only when the export carries any. "Not recorded" is printed as its own
+	// count so a reader never assumes every approval names its approver.
+	if aa := res.ApproverAttribution; aa.ApprovalReevaluations > 0 {
+		fmt.Fprintf(os.Stdout, "[INFO] Approver identity — %d approval reevaluation(s): %d approver recorded (actor + principal kind + issuer), %d not recorded (unknown, not attributed); protection: %s\n",
+			aa.ApprovalReevaluations, aa.Recorded, aa.NotRecorded, aa.Protection)
+	}
+
 	// Certified-copy (21 CFR Part 11 §11.10(b)/(c)) summary. Only printed when
 	// the bundle actually carries a certification manifest — an uncertified
 	// export is a normal, valid export and prints nothing extra. "OK" here

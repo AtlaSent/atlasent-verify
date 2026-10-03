@@ -130,6 +130,27 @@ sections) with three states — `checked`, `not_present_in_export`, and
 when some records in a section carry it and some do not, the weaker state is
 reported, because a partial check is not a check.
 
+### Approver identity on approval reevaluations (atlasent-api#3875)
+
+An `evaluations[]` row produced by an approval reevaluation carries
+`triggered_by_approval_id` plus that approval's explicit approver:
+`approver_actor_id`, `approver_principal_kind`, `approver_issuer_id`. They sit
+outside `canonical_payload`, so the outer signature is their only protection.
+`approver_attribution` counts `approval_reevaluations`, `recorded` and
+`not_recorded`. A row with the lineage but no approver fields is an approval
+resolved before the producer stored approver identity: it is counted as **not
+recorded** and printed as unknown, never attributed. `resolved_by` is not
+exported, because its meaning depends on the approval basis.
+
+The producer stores the three fields all-or-none with a closed principal-kind
+vocabulary, so a signed row that breaks either rule is refused:
+`APPROVER_IDENTITY_INCOMPLETE` (partial or empty; an approver without its
+issuer cannot be named, since one subject under two issuers is two
+principals), `APPROVER_PRINCIPAL_KIND_UNKNOWN`, and
+`APPROVER_IDENTITY_WITHOUT_APPROVAL` (approver fields with no lineage). This is
+evidence, not authority: the offline tool cannot re-verify the approver's
+assertion, only report what was signed.
+
 ### Evidence Archive layer (certification version 5)
 
 Two sections, four distinct states, reported separately — the distinctions are

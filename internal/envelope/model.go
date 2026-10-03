@@ -79,6 +79,25 @@ const (
 	// without changing an array's length, and only the hash recompute catches
 	// that. See checkCertificationBundleHash.
 	CodeCertificationBundleHashMismatch FailureCode = "CERTIFICATION_BUNDLE_HASH_MISMATCH"
+
+	// Approver identity (atlasent-api#3875). evaluations[] rows produced by an
+	// approval reevaluation carry triggered_by_approval_id plus the approval's
+	// explicit approver: approver_actor_id, approver_principal_kind,
+	// approver_issuer_id. The producer stores the three all-or-none, with a
+	// closed principal-kind vocabulary (approval_requests CHECK constraints),
+	// so a signed export that breaks either rule is incoherent evidence.
+	//
+	// APPROVER_IDENTITY_INCOMPLETE: some but not all of the three fields, or
+	// an empty actor or issuer. An approver without an issuer cannot be named
+	// unambiguously: the same subject under two issuers is two principals.
+	CodeApproverIdentityIncomplete FailureCode = "APPROVER_IDENTITY_INCOMPLETE"
+	// APPROVER_PRINCIPAL_KIND_UNKNOWN: a principal kind outside the producer's
+	// closed vocabulary (human, workload, service_account, agent).
+	CodeApproverPrincipalKindUnknown FailureCode = "APPROVER_PRINCIPAL_KIND_UNKNOWN"
+	// APPROVER_IDENTITY_WITHOUT_APPROVAL: approver fields on a row with no
+	// triggered_by_approval_id. The producer derives them only by joining that
+	// lineage, so an approver with no approval behind it is not one.
+	CodeApproverIdentityWithoutApproval FailureCode = "APPROVER_IDENTITY_WITHOUT_APPROVAL"
 )
 
 // SupportedEnvelopeVersion is the only envelope `version` this verifier
@@ -334,6 +353,11 @@ type VerificationResult struct {
 	// checked, not a section that was checked and passed.
 	CertificationCountsChecked []string `json:"certification_counts_checked,omitempty"`
 
+	// ApproverAttribution counts evaluations[] rows that are approval
+	// reevaluations, split by whether the approver was recorded
+	// (atlasent-api#3875). Rows with no approval lineage are not counted.
+	ApproverAttribution ApproverAttribution `json:"approver_attribution"`
+
 	// KeyID is the envelope's declared signing key id (echoed for the reader).
 	KeyID string `json:"key_id,omitempty"`
 	// KeyTrusted is true when the outer signature verified against a key
@@ -344,6 +368,26 @@ type VerificationResult struct {
 	// Findings is every failure across all three layers, most-relevant first
 	// (envelope, then ledger, then correlation).
 	Findings []Finding `json:"findings"`
+}
+
+// ApproverAttribution is what the export says about who approved each approval
+// reevaluation. It is evidence carried by the outer envelope signature, not
+// authority, and this offline tool cannot re-verify the approver's assertion:
+// it reports what was recorded and refuses incoherent records.
+type ApproverAttribution struct {
+	// ApprovalReevaluations is the number of evaluations[] rows carrying a
+	// triggered_by_approval_id.
+	ApprovalReevaluations int `json:"approval_reevaluations"`
+	// Recorded counts rows naming a complete approver: actor, principal kind
+	// and issuer.
+	Recorded int `json:"recorded"`
+	// NotRecorded counts approval reevaluations whose approver was not recorded
+	// (approvals resolved before the producer stored approver identity). These
+	// are reported as unknown. They are never attributed to anyone.
+	NotRecorded int `json:"not_recorded"`
+	// Protection names what protects these fields: they are outside
+	// canonical_payload, so they ride the outer envelope signature only.
+	Protection string `json:"protection"`
 }
 
 // OK reports whether the result is a clean pass under NORMAL acceptance:

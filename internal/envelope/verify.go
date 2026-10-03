@@ -99,6 +99,7 @@ func Verify(raw []byte, keys chain.KeyStore) (*VerificationResult, error) {
 		ArchiveProtection:     "outer_envelope_signature",
 		ArchiveOrgBinding:     OrgBindingNotApplicable,
 		RetentionAssurance:    RetentionNotApplicable,
+		ApproverAttribution:   ApproverAttribution{Protection: "outer_envelope_signature"},
 	}
 
 	envPtr, err := ParseEnvelope(raw)
@@ -191,6 +192,11 @@ func Verify(raw []byte, keys chain.KeyStore) (*VerificationResult, error) {
 			res.RetentionAssurance = RetentionNotRecorded
 		}
 	}
+
+	// (4b) Approver identity on approval reevaluations (atlasent-api#3875).
+	// Covered by the outer signature verified in (1); this checks the records
+	// are coherent and counts what they claim.
+	checkApproverAttribution(&env, res)
 
 	// (5) Certification census cross-check. A manifest claiming more records
 	// than the bundle carries is what a truncated export looks like from the
