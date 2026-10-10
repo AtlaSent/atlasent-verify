@@ -1,0 +1,187 @@
+name: artifact.release staging proof
+
+# STAGING-ONLY proof of AtlaSent's artifact.release gate. It ships nothing:
+# it builds a throwaway file, attests its provenance, and exercises the
+# supply_chain assertion issuer + evaluate on the STAGING runtime. It never
+# touches release.yml, a tag, or a published artifact.
+#
+# Passes only if:
+#   - the governed path (atlasent-action, action: artifact.release) reaches a
+#     verified allow, and
+#   - every refusal probe is refused: wrong digest, wrong resource, tampered
+#     assertion, untrusted issuer, expired assertion, and an actor-identity
+#     audience token presented to the provenance issuer.
+# Evidence (decision bodies, no credentials) is uploaded as an artifact.
+#
+# Requires the GitHub Environment `staging-release-proof` with secret
+# ATLASENT_STAGING_RELEASE_API_KEY: a STAGING runtime key for the staging
+# Accounting_Demo org, scopes evaluate:write verify:execute idp_broker:mint.
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_expiry_probe:
+        description: "Also wait out an assertion's lifetime (adds up to ~15 min)"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-proof-staging
+  cancel-in-progress: false
+
+env:
+  BASE: https://lwnqpmnxpeyhpxvastku.supabase.co/functions/v1
+  RESOURCE: artifact:atlasent/atlasent-verify:release-proof
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    environment: staging-release-proof
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Build a throwaway artifact
+        id: build
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          printf 'atlasent-verify staging release proof\nrun=%s sha=%s\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > out/proof.txt
+          echo "digest=sha256:$(sha256sum out/proof.txt | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: out/proof.txt
+
+      - name: Governed release (must reach a verified allow)
+        id: release
+        uses: Atlasent/atlasent-action@aeeaa0f11ba425a88d965249c237a7bf762cc715
+        env:
+          ATLASENT_API_KEY: ${{ secrets.ATLASENT_STAGING_RELEASE_API_KEY }}
+          ATLASENT_BASE_URL: ${{ env.BASE }}
+        with:
+          action: artifact.release
+          target-id: ${{ env.RESOURCE }}
+          artifact-digest: ${{ steps.build.outputs.digest }}
+          environment: staging
+          api-url: ${{ env.BASE }}
+          approvals-from: none
+          pr-comment-on-deny: "false"
+
+      - name: Assert the governed release was verified
+        env:
+          VERIFIED: ${{ steps.release.outputs.verified }}
+          DECISION: ${{ steps.release.outputs.decision }}
+          EVAL_ID: ${{ steps.release.outputs.evaluation-id }}
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          jq -n --arg v "$VERIFIED" --arg d "$DECISION" --arg e "$EVAL_ID" '{verified:$v,decision:$d,evaluation_id:$e}' > evidence/allow.json
+          cat evidence/allow.json
+          [ "$VERIFIED" = "true" ] || { echo "::error::governed artifact.release did not verify"; exit 1; }
+
+      - name: Refusal probes
+        env:
+          KEY: ${{ secrets.ATLASENT_STAGING_RELEASE_API_KEY }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          RUN_EXPIRY: ${{ inputs.run_expiry_probe }}
+        run: |
+          set -euo pipefail
+          echo "::add-mask::$KEY"
+          mkdir -p evidence
+          oidc() { curl -sS --fail-with-body -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=$1" | jq -r '.value'; }
+          post() { curl -sS -o "$2" -w '%{http_code}' -X POST "$BASE/$1" -H "Authorization: Bearer $KEY" -H 'Content-Type: application/json' --data-binary @-; }
+          mint_actor() {
+            jq -n --arg t "$(oidc atlasent:actor_identity.v1)" '{provider:"github_actions",id_token:$t,action_type:"artifact.release",environment:"staging"}' \
+              | post v1-idp-broker/mint/actor-identity actor.json >/dev/null
+            jq -e '.assertion.version == "actor_identity.v1"' actor.json >/dev/null
+          }
+          mint_sc() { # $1 resource
+            jq -n --arg t "$(oidc atlasent:supply_chain.v1)" --arg d "$DIGEST" --arg r "$1" '{id_token:$t,artifact_digest:$d,resource_id:$r,environment:"staging"}' \
+              | post v1-supply-chain-assertion sc.json
+          }
+          evaluate() { # $1 name, $2 assertion json, $3 resource_id, $4 artifact digest
+            mint_actor
+            jq -n --slurpfile ai actor.json --argjson a "$2" --arg r "$3" --arg d "$4" --arg rid "release-proof-$1-$GITHUB_RUN_ID" \
+              '{request_id:$rid,action_type:"artifact.release",actor_id:$ai[0].actor_id,environment:"staging",target_id:$r,resource_id:$r,
+                actor_identity:$ai[0].assertion,assertions:[$a],context:{environment:"staging",artifact_digest:$d}}' \
+              | post v1-evaluate "evidence/$1.json" >/dev/null
+          }
+          expect_refused() { # $1 name
+            local d c; d=$(jq -r '.decision // ""' "evidence/$1.json"); c=$(jq -r '.deny_code // .error // ""' "evidence/$1.json")
+            echo "$1: decision=$d code=$c"
+            [ "$d" = "deny" ] || { echo "::error::$1 was not refused (decision=$d)"; exit 1; }
+            case "$c" in ASSERTION_*) ;; *) echo "::error::$1 refused for an unexpected reason: $c"; exit 1 ;; esac
+          }
+
+          # Each probe gets its own freshly minted assertion, so a refusal can only
+          # come from the one thing that probe changes (never from reuse).
+          fresh() { local code; code=$(mint_sc "$RESOURCE"); [ "$code" = 200 ] || { cat sc.json; echo "::error::issuer refused a valid mint ($code)"; exit 1; }; jq -c '.assertion' sc.json; }
+
+          # Control first: an untouched assertion allows, so the setup is sound.
+          a=$(fresh)
+          evaluate control "$a" "$RESOURCE" "$DIGEST"
+          [ "$(jq -r '.decision' evidence/control.json)" = "allow" ] || { echo "::error::control did not allow: $(jq -c '{decision,deny_code,deny_reason}' evidence/control.json)"; exit 1; }
+          echo "control: allow"
+
+          # 1. wrong digest: the assertion vouches for $DIGEST, the request claims another.
+          a=$(fresh)
+          evaluate wrong-digest "$a" "$RESOURCE" "sha256:$(printf other | sha256sum | cut -d' ' -f1)"; expect_refused wrong-digest
+          # 2. wrong resource: a different resource_id than the assertion names.
+          a=$(fresh)
+          evaluate wrong-resource "$a" "artifact:atlasent/atlasent-verify:not-this" "$DIGEST"; expect_refused wrong-resource
+          # 3. tampered: one signature character changed.
+          a=$(fresh); a=$(jq -c '.signature |= (if .[0:1]=="A" then "B" else "A" end) + .[1:]' <<<"$a")
+          evaluate tampered "$a" "$RESOURCE" "$DIGEST"; expect_refused tampered
+          # 4. untrusted issuer: a VALIDLY signed assertion (fresh Ed25519 key, same
+          # canonical bytes the runtime verifies) from an issuer the trust root
+          # does not hold, so trust is the only thing that can fail. evaluate does
+          # not report per-assertion reasons on the wire (every unverified
+          # required class answers ASSERTION_UNVERIFIED), so the probe controls
+          # the input rather than reading a reason code.
+          a=$(fresh); a=$(UNSIGNED="$a" node -e '
+            const { generateKeyPairSync, sign, verify } = require("node:crypto");
+            const canon = (v) => v === null || typeof v !== "object" ? JSON.stringify(v)
+              : Array.isArray(v) ? "[" + v.map((x) => x === undefined ? "null" : canon(x)).join(",") + "]"
+              : "{" + Object.keys(v).sort().filter((k) => v[k] !== undefined).map((k) => JSON.stringify(k) + ":" + canon(v[k])).join(",") + "}";
+            const a = JSON.parse(process.env.UNSIGNED);
+            a.issuer = "atlasent:supply-chain:untrusted"; a.key_id = "untrusted-1";
+            const { signature: _s, ...rest } = a;
+            const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+            const msg = Buffer.from(canon(rest));
+            const sig = sign(null, msg, privateKey);
+            if (!verify(null, msg, publicKey, sig)) process.exit(2);
+            a.signature = sig.toString("hex");
+            process.stdout.write(JSON.stringify(a));')
+          evaluate untrusted-issuer "$a" "$RESOURCE" "$DIGEST"; expect_refused untrusted-issuer
+          # 5. wrong audience: an actor-identity token presented to the provenance issuer.
+          code=$(jq -n --arg t "$(oidc atlasent:actor_identity.v1)" --arg d "$DIGEST" --arg r "$RESOURCE" '{id_token:$t,artifact_digest:$d,resource_id:$r,environment:"staging"}' \
+            | post v1-supply-chain-assertion evidence/wrong-audience.json)
+          echo "wrong-audience: HTTP $code $(jq -c '{error}' evidence/wrong-audience.json)"
+          [ "$code" = 401 ] || { echo "::error::issuer accepted an actor-identity audience token ($code)"; exit 1; }
+          # 6. expired: wait past the assertion's not_after, then present it.
+          if [ "$RUN_EXPIRY" = "true" ]; then
+            later=$(fresh)
+            wait_s=$(( $(date -d "$(jq -r '.binding.not_after' <<<"$later")" +%s) - $(date +%s) + 10 ))
+            echo "waiting ${wait_s}s for the assertion to expire"; [ "$wait_s" -gt 0 ] && sleep "$wait_s"
+            evaluate expired "$later" "$RESOURCE" "$DIGEST"; expect_refused expired
+          fi
+
+      - name: Strip permits from evidence
+        if: always()
+        run: |
+          for f in evidence/*.json; do [ -f "$f" ] && jq 'del(.permit_token, .permit)' "$f" > "$f.tmp" && mv "$f.tmp" "$f"; done || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: artifact-release-staging-proof
+          path: evidence/
+          retention-days: 90
