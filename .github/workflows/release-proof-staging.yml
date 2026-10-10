@@ -62,7 +62,7 @@ jobs:
 
       - name: Governed release (must reach a verified allow)
         id: release
-        uses: Atlasent/atlasent-action@aeeaa0f11ba425a88d965249c237a7bf762cc715
+        uses: Atlasent/atlasent-action@733dcbad8bf028da0126573602d182d248926607
         env:
           ATLASENT_API_KEY: ${{ secrets.ATLASENT_STAGING_RELEASE_API_KEY }}
           ATLASENT_BASE_URL: ${{ env.BASE }}
