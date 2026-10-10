@@ -109,9 +109,10 @@ jobs:
           }
           evaluate() { # $1 name, $2 assertion json, $3 resource_id, $4 artifact digest
             mint_actor
-            jq -n --slurpfile ai actor.json --argjson a "$2" --arg r "$3" --arg d "$4" --arg rid "release-proof-$1-$GITHUB_RUN_ID" \
+            jq -n --slurpfile ai actor.json --argjson a "$2" --arg r "$3" --arg d "$4" --arg rid "release-proof-$1-$GITHUB_RUN_ID" --arg run "$GITHUB_RUN_ID" \
               '{request_id:$rid,action_type:"artifact.release",actor_id:$ai[0].actor_id,environment:"staging",target_id:$r,resource_id:$r,
-                actor_identity:$ai[0].assertion,assertions:[$a],context:{environment:"staging",artifact_digest:$d}}' \
+                actor_identity:$ai[0].assertion,assertions:[$a],context:{environment:"staging",artifact_digest:$d},
+                state_snapshot:{source:"github-actions",complete:true,run_id:$run}}' \
               | post v1-evaluate "evidence/$1.json" >/dev/null
           }
           expect_refused() { # $1 name
