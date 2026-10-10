@@ -140,8 +140,26 @@ jobs:
           # 3. tampered: one signature character changed.
           a=$(fresh); a=$(jq -c '.signature |= (if .[0:1]=="A" then "B" else "A" end) + .[1:]' <<<"$a")
           evaluate tampered "$a" "$RESOURCE" "$DIGEST"; expect_refused tampered
-          # 4. untrusted issuer: the issuer field names one the trust root does not hold.
-          a=$(fresh); a=$(jq -c '.issuer = "atlasent:supply-chain:untrusted"' <<<"$a")
+          # 4. untrusted issuer: a VALIDLY signed assertion (fresh Ed25519 key, same
+          # canonical bytes the runtime verifies) from an issuer the trust root
+          # does not hold, so trust is the only thing that can fail. evaluate does
+          # not report per-assertion reasons on the wire (every unverified
+          # required class answers ASSERTION_UNVERIFIED), so the probe controls
+          # the input rather than reading a reason code.
+          a=$(fresh); a=$(UNSIGNED="$a" node -e '
+            const { generateKeyPairSync, sign, verify } = require("node:crypto");
+            const canon = (v) => v === null || typeof v !== "object" ? JSON.stringify(v)
+              : Array.isArray(v) ? "[" + v.map((x) => x === undefined ? "null" : canon(x)).join(",") + "]"
+              : "{" + Object.keys(v).sort().filter((k) => v[k] !== undefined).map((k) => JSON.stringify(k) + ":" + canon(v[k])).join(",") + "}";
+            const a = JSON.parse(process.env.UNSIGNED);
+            a.issuer = "atlasent:supply-chain:untrusted"; a.key_id = "untrusted-1";
+            const { signature: _s, ...rest } = a;
+            const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+            const msg = Buffer.from(canon(rest));
+            const sig = sign(null, msg, privateKey);
+            if (!verify(null, msg, publicKey, sig)) process.exit(2);
+            a.signature = sig.toString("hex");
+            process.stdout.write(JSON.stringify(a));')
           evaluate untrusted-issuer "$a" "$RESOURCE" "$DIGEST"; expect_refused untrusted-issuer
           # 5. wrong audience: an actor-identity token presented to the provenance issuer.
           code=$(jq -n --arg t "$(oidc atlasent:actor_identity.v1)" --arg d "$DIGEST" --arg r "$RESOURCE" '{id_token:$t,artifact_digest:$d,resource_id:$r,environment:"staging"}' \
