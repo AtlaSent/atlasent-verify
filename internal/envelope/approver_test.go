@@ -118,6 +118,20 @@ func TestApprover_FieldsAreSignatureProtected(t *testing.T) {
 			if res.OK() {
 				t.Error("tampered envelope must not be OK")
 			}
+
+			// The approver fields sit outside canonical_payload, so the edit
+			// must leave the per-evaluation hash chain intact (atlasent-verify#49):
+			// only the outer signature protects them. Verify() stops at the
+			// broken signature, so run the ledger check on the tampered bytes
+			// directly.
+			env, err := ParseEnvelope(tampered)
+			if err != nil {
+				t.Fatal(err)
+			}
+			verified, layer := verifyLedger(env, &VerificationResult{})
+			if layer != LayerValid || verified != len(env.Evaluations) {
+				t.Errorf("approver edit must not touch the hash chain; got ledger=%s verified=%d of %d", layer, verified, len(env.Evaluations))
+			}
 		})
 	}
 }
