@@ -22,7 +22,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Atlasent/atlasent-verify/internal/jcs"
+	"github.com/AtlaSent/atlasent-verify/internal/jcs"
 )
 
 func reconcileFixture(name string) (a, b string) {

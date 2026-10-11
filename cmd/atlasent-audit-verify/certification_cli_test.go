@@ -18,7 +18,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Atlasent/atlasent-verify/internal/jcs"
+	"github.com/AtlaSent/atlasent-verify/internal/jcs"
 )
 
 // bundleSha256Of mirrors _shared/certified-copy.ts::computeBundleSha256
