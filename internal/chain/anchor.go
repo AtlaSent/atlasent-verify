@@ -8,7 +8,7 @@ import (
 	"io"
 	"sort"
 
-	"github.com/Atlasent/atlasent-verify/internal/canonical"
+	"github.com/AtlaSent/atlasent-verify/internal/canonical"
 )
 
 // HeadAnchor is an out-of-band, trusted assertion of an org's chain

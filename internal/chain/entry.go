@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/Atlasent/atlasent-verify/internal/canonical"
+	"github.com/AtlaSent/atlasent-verify/internal/canonical"
 )
 
 // GenesisPreviousHashHex is the documented genesis previous-hash.

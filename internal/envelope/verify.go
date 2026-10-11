@@ -12,9 +12,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/Atlasent/atlasent-verify/internal/canonical"
-	"github.com/Atlasent/atlasent-verify/internal/chain"
-	"github.com/Atlasent/atlasent-verify/internal/jcs"
+	"github.com/AtlaSent/atlasent-verify/internal/canonical"
+	"github.com/AtlaSent/atlasent-verify/internal/chain"
+	"github.com/AtlaSent/atlasent-verify/internal/jcs"
 )
 
 // LooksLikeEnvelope reports whether raw is an audit-export ENVELOPE rather than
