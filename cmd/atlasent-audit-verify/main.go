@@ -35,7 +35,7 @@ const supportedChainVersion = 5
 
 func main() {
 	chainPath := flag.String("chain", "", "Path to the audit export to verify (required, '-' for stdin). Accepts an NDJSON chain OR a signed export envelope (auto-detected).")
-	keysPath := flag.String("keys", "", "Path to PEM file of Ed25519 public keys (optional; signature verification skipped if absent). For an envelope, resolves the R3 audit-export key_id to an externally trusted key.")
+	keysPath := flag.String("keys", "", "Path to a PEM file of Ed25519 public keys, or to the published JWKS trust root (keys.atlasent.io/.well-known/atlasent-verifier-keys.json; only active R3_audit keys are loaded) (optional; signature verification skipped if absent). For an envelope, resolves the R3 audit-export key_id to an externally trusted key.")
 	headPath := flag.String("head", "", "Path to a trusted head-anchor JSON file (NDJSON mode only; tail-truncation / completeness check skipped if absent)")
 	requireSigs := flag.Bool("require-signatures", false, "Strict acceptance: fail (exit 1) unless signatures were verified against a known key. Requires --keys. In envelope mode, requires the outer signature to verify against an externally trusted key (not merely the envelope's embedded public_key_pem).")
 	bundle := flag.Bool("bundle", false, "Force envelope (signed export bundle) verification even if auto-detection is unsure.")
@@ -90,6 +90,9 @@ func main() {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: load keys: %v\n", err)
 			os.Exit(2)
+		}
+		for _, k := range store.Skipped() {
+			fmt.Fprintf(os.Stderr, "note: JWKS key %q not loaded (%s)\n", k.Kid, k.Reason)
 		}
 		ks = store
 	}

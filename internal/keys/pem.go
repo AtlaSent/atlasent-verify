@@ -1,5 +1,6 @@
-// Package keys loads Ed25519 public keys from a PEM file for the
-// audit-verify CLI. Each PEM block is expected to have:
+// Package keys loads Ed25519 public keys for the audit-verify CLI, from either
+// a PEM file or the published JWKS trust root (see jwks.go). Each PEM block is
+// expected to have:
 //
 //   - Type: "ATLASENT PUBLIC KEY"  (or the standard "PUBLIC KEY")
 //   - Header: kid: <key_version>   (the selector matching entry.key_version)
@@ -21,10 +22,11 @@ import (
 
 // Store maps key_version → ed25519.PublicKey.
 type Store struct {
-	m map[string]ed25519.PublicKey
+	m       map[string]ed25519.PublicKey
+	skipped []SkippedKey
 }
 
-// LoadFile reads a PEM file and returns a Store.
+// LoadFile reads a PEM file or a JWKS trust-root file and returns a Store.
 func LoadFile(path string) (*Store, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -33,8 +35,12 @@ func LoadFile(path string) (*Store, error) {
 	return Parse(data)
 }
 
-// Parse reads PEM bytes and returns a Store.
+// Parse reads PEM bytes, or a JWKS document (detected by a leading '{'), and
+// returns a Store.
 func Parse(data []byte) (*Store, error) {
+	if looksLikeJSON(data) {
+		return parseJWKS(data)
+	}
 	s := &Store{m: map[string]ed25519.PublicKey{}}
 	remaining := bytes.TrimSpace(data)
 	for len(remaining) > 0 {
