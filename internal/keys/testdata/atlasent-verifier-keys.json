@@ -1,0 +1,97 @@
+{
+  "schema": "atlasent-verifier-keys/v1",
+  "issued_at": "2026-09-14T03:20:00Z",
+  "keys": [
+    {
+      "kid": "v2-audit-2026",
+      "role": "R3_audit",
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "alg": "EdDSA",
+      "x": "IctfKl2VEOaRBX9jvoYnUc2cInF81WgywU5iY3_Ui44",
+      "valid_from": "2026-05-28T00:00:00Z",
+      "valid_until": "2027-06-01T00:00:00Z",
+      "replaced_by": "v1",
+      "revoked": true,
+      "tenant": null
+    },
+    {
+      "kid": "test-key",
+      "role": "R3_audit",
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "alg": "EdDSA",
+      "x": "uCfAGR92U9gKXqMmGs4MCoaTq-LmzoRe_aiwZE6UcnQ",
+      "valid_from": "2026-01-01T00:00:00Z",
+      "valid_until": "2027-01-01T00:00:00Z",
+      "replaced_by": "v2-audit-2026",
+      "revoked": true,
+      "tenant": null
+    },
+    {
+      "kid": "permit-kid",
+      "role": "R2_permit",
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "alg": "EdDSA",
+      "x": "uCfAGR92U9gKXqMmGs4MCoaTq-LmzoRe_aiwZE6UcnQ",
+      "valid_from": "2026-01-01T00:00:00Z",
+      "valid_until": "2027-01-01T00:00:00Z",
+      "replaced_by": "ak_2026_q3_atlasent_permit",
+      "revoked": true,
+      "tenant": null
+    },
+    {
+      "kid": "revoked-kid",
+      "role": "R3_audit",
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "alg": "EdDSA",
+      "x": "uCfAGR92U9gKXqMmGs4MCoaTq-LmzoRe_aiwZE6UcnQ",
+      "valid_from": "2026-01-01T00:00:00Z",
+      "valid_until": "2027-01-01T00:00:00Z",
+      "replaced_by": null,
+      "revoked": true,
+      "tenant": null
+    },
+    {
+      "kid": "ak_2026_q3_atlasent_permit",
+      "role": "R2_permit",
+      "tenant": "atlasent",
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "alg": "EdDSA",
+      "x": "3psqJ3CGPIKe4N2oSgu75f1cnJgnbWLcBFThFk4N_qc",
+      "valid_from": "2026-07-01T00:00:00Z",
+      "valid_until": "2027-01-01T00:00:00Z",
+      "replaced_by": null,
+      "revoked": false
+    },
+    {
+      "kid": "v1",
+      "role": "R3_audit",
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "alg": "EdDSA",
+      "x": "r0leDQfIerrgVCb8M1shVf6L5Qer0C13qV3Dee70D3o",
+      "valid_from": "2026-06-07T00:00:00Z",
+      "valid_until": "2027-07-08T00:00:00Z",
+      "replaced_by": null,
+      "revoked": false,
+      "tenant": null
+    },
+    {
+      "kid": "ak_2026_q3_atlasent_audit",
+      "role": "R3_audit",
+      "tenant": "atlasent",
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "alg": "EdDSA",
+      "x": "AXSz2fwodpUxDxL-KV-rwFU2_2VQDORbnClLivQZ9Ug",
+      "valid_from": "2026-09-13T21:51:00Z",
+      "valid_until": "2027-03-31T00:00:00Z",
+      "replaced_by": null,
+      "revoked": false
+    }
+  ]
+}

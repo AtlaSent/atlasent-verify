@@ -63,6 +63,26 @@ Arguments:
 - `--keys` — optional PEM file containing Ed25519 public keys keyed by
   `key_version` (NDJSON mode) or `key_id` (envelope mode). If omitted, the
   CLI explicitly reports that signature verification was not performed.
+  `--keys` also accepts AtlaSent's published trust root directly, with no
+  conversion:
+
+  ```bash
+  curl -sO https://keys.atlasent.io/.well-known/atlasent-verifier-keys.json
+  atlasent-audit-verify --chain export.json \
+    --keys atlasent-verifier-keys.json --require-signatures
+  ```
+
+  From that file the CLI loads only keys with `role: R3_audit` and
+  `revoked: false`. An R2 permit key never verifies audit evidence, and a
+  revoked key is never trusted. Each key it leaves out is named on stderr.
+  The schema must be exactly `atlasent-verifier-keys/v1`. A malformed audit
+  key, a duplicate active `kid`, or a file with no active audit key is an
+  error. `valid_from` and `valid_until` are not checked, because they apply
+  at signing time, which the key loader does not see.
+
+  This reads the file you downloaded. It does not check the file's cosign
+  bundle (`atlasent-verifier-keys.json.bundle`). Verify that with `cosign`
+  first if the copy did not come straight from `keys.atlasent.io`.
 - `--head` — optional trusted chain-head anchor obtained independently of the
   export (NDJSON mode only). Enables tail-truncation detection.
 - `--require-signatures` — strict-acceptance mode: fail (exit 1) instead of
