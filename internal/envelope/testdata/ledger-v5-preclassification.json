@@ -1,0 +1,57 @@
+{
+  "_comment": "export_evaluation_rows output (atlasent-api migration 20261712000000) from a local supabase/postgres:15.1.0.147 apply of the full migration tree: a v4 row, two v5 pre-classification denies (NULL action_class_id), then a v4 row, in one per-org chain. Produced by the real append_evaluation writer and evaluation_canonical_payload_ext; not hand-written. Synthetic org and ids; no customer data.",
+  "evaluations": [
+    {
+      "id": "5824674d-b870-4eff-998e-6d34a9d72658",
+      "payload_version": 4,
+      "prev_hash": null,
+      "entry_hash": "3016d299d73d6d4f078501f58d4ac665f921de37e6c1b5f64f5ab5acbeffc5ab",
+      "canonical_payload": "v4|00000000-0000-0000-0000-0000000000f5|00000000-0000-0000-0000-0000000000f6|parity-v4-a|ci|allow||fp|pt-a||1|||eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee||2026-10-21T00:03:32.538497Z|GENESIS",
+      "decision": "allow",
+      "deny_code": null,
+      "permit_token_hash": "pt-a",
+      "requested_action_type": null,
+      "client_request_id": null,
+      "request_context": {}
+    },
+    {
+      "id": "7a404158-b78d-4213-820a-833efaa5f710",
+      "payload_version": 5,
+      "prev_hash": "3016d299d73d6d4f078501f58d4ac665f921de37e6c1b5f64f5ab5acbeffc5ab",
+      "entry_hash": "bfccb94c6b438079b0c1bc896a76edfe3530813882e248e16f744457c6155300",
+      "canonical_payload": "v5|00000000-0000-0000-0000-0000000000f5||unknown.action|caller-req-1|aaaaaaaa-0000-4000-8000-000000000001|ci|deny|NO_ACTION_CLASS|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa||||||||2026-10-21T00:03:32.550451Z|3016d299d73d6d4f078501f58d4ac665f921de37e6c1b5f64f5ab5acbeffc5ab",
+      "decision": "deny",
+      "deny_code": "NO_ACTION_CLASS",
+      "permit_token_hash": null,
+      "requested_action_type": "unknown.action",
+      "client_request_id": "caller-req-1",
+      "request_context": {}
+    },
+    {
+      "id": "1efa620f-bee2-4925-aad1-0623e82b9694",
+      "payload_version": 5,
+      "prev_hash": "bfccb94c6b438079b0c1bc896a76edfe3530813882e248e16f744457c6155300",
+      "entry_hash": "4d41527cda62af110762192b03b8b7c013f814e92f168fb6f97e9102e9fdf550",
+      "canonical_payload": "v5|00000000-0000-0000-0000-0000000000f5||deploy.prod||aaaaaaaa-0000-4000-8000-000000000002|ci|deny|BOUNDARY_VIOLATION|cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc||||||||2026-10-21T00:03:32.553803Z|bfccb94c6b438079b0c1bc896a76edfe3530813882e248e16f744457c6155300",
+      "decision": "deny",
+      "deny_code": "BOUNDARY_VIOLATION",
+      "permit_token_hash": null,
+      "requested_action_type": "deploy.prod",
+      "client_request_id": null,
+      "request_context": {}
+    },
+    {
+      "id": "9bbe76b8-2983-480e-b15f-311e68ca63a8",
+      "payload_version": 4,
+      "prev_hash": "4d41527cda62af110762192b03b8b7c013f814e92f168fb6f97e9102e9fdf550",
+      "entry_hash": "fe0aee038fe4738c2f90993cb187a32f4066cf8da76e2a3ac13b46bddf48b879",
+      "canonical_payload": "v4|00000000-0000-0000-0000-0000000000f5|00000000-0000-0000-0000-0000000000f6|parity-v4-b|ci|allow||fp|pt-b||1|||ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff||2026-10-21T00:03:32.556063Z|4d41527cda62af110762192b03b8b7c013f814e92f168fb6f97e9102e9fdf550",
+      "decision": "allow",
+      "deny_code": null,
+      "permit_token_hash": "pt-b",
+      "requested_action_type": null,
+      "client_request_id": null,
+      "request_context": {}
+    }
+  ]
+}
