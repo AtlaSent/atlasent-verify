@@ -1,5 +1,5 @@
 {
-  "_comment": "export_evaluation_rows output (atlasent-api migration 20261710000000) from a local supabase/postgres:15.1.0.147 apply of the full migration tree: a v4 row, two v5 pre-classification denies (NULL action_class_id), then a v4 row, in one per-org chain. Produced by the real append_evaluation writer and evaluation_canonical_payload_ext; not hand-written. Synthetic org and ids; no customer data.",
+  "_comment": "export_evaluation_rows output (atlasent-api migration 20261712000000) from a local supabase/postgres:15.1.0.147 apply of the full migration tree: a v4 row, two v5 pre-classification denies (NULL action_class_id), then a v4 row, in one per-org chain. Produced by the real append_evaluation writer and evaluation_canonical_payload_ext; not hand-written. Synthetic org and ids; no customer data.",
   "evaluations": [
     {
       "id": "5824674d-b870-4eff-998e-6d34a9d72658",

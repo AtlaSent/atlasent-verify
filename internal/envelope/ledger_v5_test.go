@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-// evaluation-chain-v5 (atlasent-api 20261710000000) records a deny that
+// evaluation-chain-v5 (atlasent-api 20261712000000) records a deny that
 // /v1-evaluate returned before any action class resolved. Its rows have a NULL
 // action_class_id and a 19-field canonical payload. The ledger layer never
 // parses fields: it checks sha256(canonical_payload) == entry_hash and
