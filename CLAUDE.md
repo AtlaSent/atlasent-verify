@@ -609,6 +609,18 @@ internal/keys/                PEM keystore (kid → ed25519.PublicKey)
                              runs trusted guard code from main only)
 ```
 
+## Who may release
+
+Only the people listed by numeric user id in `.github/production-dispatchers.json`
+(2026-10-29). Every job in `release.yml` first runs
+`.github/actions/production-dispatcher-check`, which refuses unless the tag
+pusher or dispatcher, and anyone re-running the attempt, is on that list.
+`ci.yml` runs `scripts/check-production-dispatcher.mjs --self-test` and
+`--verify-workflows`. A workflow on a tag pushed by someone else runs that
+tag's copy, so a tag ruleset restricting who may create `v*` tags is still
+needed. Add a dispatcher only by a reviewed change to that file plus a
+DECISION_LEDGER entry in `atlasent-internal`.
+
 ## Key rules
 
 - **Read-only** — no network calls, no DB access, no chain modification.

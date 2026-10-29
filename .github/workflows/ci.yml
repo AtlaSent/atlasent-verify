@@ -52,3 +52,16 @@ jobs:
             exit 1
           fi
           /tmp/atlasent-audit-verify-static --version
+
+      # Every job in release.yml must check its dispatcher before anything else.
+      # js-yaml is installed, pinned, outside the workspace (this is a Go repo).
+      - name: Install js-yaml 4.3.2 for the dispatcher guard
+        run: npm install --prefix "$RUNNER_TEMP/dispatcher-guard-yaml" js-yaml@4.3.2 --no-audit --no-fund --no-save
+      - name: Prove the dispatcher guard rejects the defects it targets
+        env:
+          JS_YAML_MODULE: ${{ runner.temp }}/dispatcher-guard-yaml/node_modules/js-yaml/dist/js-yaml.mjs
+        run: node scripts/check-production-dispatcher.mjs --self-test
+      - name: Check every release job runs the dispatcher check first
+        env:
+          JS_YAML_MODULE: ${{ runner.temp }}/dispatcher-guard-yaml/node_modules/js-yaml/dist/js-yaml.mjs
+        run: node scripts/check-production-dispatcher.mjs --verify-workflows
