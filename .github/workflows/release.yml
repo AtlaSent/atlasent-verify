@@ -83,6 +83,10 @@ jobs:
       statuses: write
     steps:
       - uses: actions/checkout@v6
+      # Before anything else: refuse unless the dispatcher (and anyone
+      # re-running this attempt) is on .github/production-dispatchers.json.
+      - name: Production dispatcher must be on the allowlist
+        uses: ./.github/actions/production-dispatcher-check
       - name: AtlaSent release gate
         id: atlasent_gate
         uses: Atlasent/atlasent-action@v1
@@ -120,6 +124,11 @@ jobs:
             ext: '.exe'
     steps:
       - uses: actions/checkout@v6
+
+      # Before anything else: refuse unless the dispatcher (and anyone
+      # re-running this attempt) is on .github/production-dispatchers.json.
+      - name: Production dispatcher must be on the allowlist
+        uses: ./.github/actions/production-dispatcher-check
 
       - uses: actions/setup-go@v6
         with:
@@ -170,6 +179,11 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v6
+
+      # Before anything else: refuse unless the dispatcher (and anyone
+      # re-running this attempt) is on .github/production-dispatchers.json.
+      - name: Production dispatcher must be on the allowlist
+        uses: ./.github/actions/production-dispatcher-check
 
       - name: Derive version label
         id: version
